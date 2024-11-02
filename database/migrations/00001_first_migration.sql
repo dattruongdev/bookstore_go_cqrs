@@ -19,7 +19,7 @@ CREATE TABLE if not exists  users (
     email VARCHAR(255) NOT NULL UNIQUE,
     firstname VARCHAR(255) NOT NULL,
     lastname VARCHAR(255),
-    "role" VARCHAR(100) NOT NULL,
+    "role" VARCHAR(100) NOT NULL DEFAULT 'ROLE_USER',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -28,8 +28,8 @@ CREATE TABLE if not exists  "copy" (
     -- adding foreign key for isbn
     book_isbn VARCHAR(255) NOT NULL,
     user_id UUID NOT NULL,
-    barcode CHAR(13) PRIMARY KEY,
-    available BOOLEAN NOT NULL,
+    barcode CHAR(255) PRIMARY KEY NOT NULL,
+    available BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id),
@@ -38,12 +38,12 @@ CREATE TABLE if not exists  "copy" (
 
 CREATE TABLE   if not exists "borrow" (
     -- adding foreign key for isbn
-    book_isbn VARCHAR(255) NOT NULL,
+    copy_barcode char(255) NOT NULL,
     user_id UUID NOT NULL,
-    borrowed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    returned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    borrowed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    returned_at TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (book_isbn) REFERENCES books(isbn)
+    FOREIGN KEY (copy_barcode) REFERENCES "copy"(barcode)
 );
 
 

@@ -3,7 +3,8 @@ package adapters
 import (
 	"database/sql"
 
-	"github.com/dattruongdev/bookstore_cqrs/contexts/user/domain"
+	"github.com/dattruongdev/bookstore_cqrs/contexts/auth/domain"
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -17,7 +18,7 @@ func NewPostgresUserRepository(db *sqlx.DB) *PostgresUserRepository {
 	}
 }
 
-func (pr *PostgresUserRepository) FindById(userId int) (domain.User, error) {
+func (pr *PostgresUserRepository) FindById(userId uuid.UUID) (domain.User, error) {
 	query := `SELECT * FROM users WHERE id=$1`
 
 	rows, err := pr.db.Query(query, userId)
@@ -69,6 +70,7 @@ func (pr *PostgresUserRepository) FindByUsername(username string) (domain.User, 
 
 	return user, nil
 }
+
 func (pr *PostgresUserRepository) CreateUser(user domain.User) error {
 	query := `INSERT INTO users (username, email, password, avatar, role) VALUES ($1, $2, $3, $4, $5)`
 
@@ -85,26 +87,12 @@ func scanUser(rows *sql.Rows) (domain.User, error) {
 	if !rows.Next() {
 		return domain.User{}, nil
 	}
-	var id int
-	var username string
-	var email string
-	var password string
-	var avatar string
-	var role string
+	var user domain.User
 
-	err := rows.Scan(&id, &username, &email, &password, &avatar, &role)
+	err := rows.Scan(&user.Id, &user.Username, &user.Email, &user.Password, &user.Avatar, &user.Role)
 
 	if err != nil {
 		return domain.User{}, err
-	}
-
-	user := domain.User{
-		Id:       id,
-		Username: username,
-		Email:    email,
-		Password: password,
-		Avatar:   avatar,
-		Role:     role,
 	}
 
 	return user, nil

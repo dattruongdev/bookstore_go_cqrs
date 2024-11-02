@@ -3,7 +3,7 @@ package commands
 import (
 	"context"
 
-	"github.com/dattruongdev/bookstore_cqrs/contexts/user/domain"
+	"github.com/dattruongdev/bookstore_cqrs/contexts/auth/domain"
 )
 
 type CreateUser struct {
