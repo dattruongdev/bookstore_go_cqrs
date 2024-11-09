@@ -99,3 +99,25 @@ func (r *PostgresCopyRepository) UpdateCopy(c context.Context, copy domain.Copy)
 
 	return err
 }
+
+func (r *PostgresCopyRepository) FindFirstAvailableCopy(c context.Context, isbn string) (domain.Copy, error) {
+	query := `SELECT * FROM copies WHERE book_isbn=$1 AND available=true LIMIT 1`
+
+	rows, err := r.db.Query(query, isbn)
+
+	if err != nil {
+		return domain.Copy{}, err
+	}
+
+	copies, err := scanCopy(rows)
+
+	if err != nil {
+		return domain.Copy{}, err
+	}
+
+	if len(copies) == 0 {
+		return domain.Copy{}, sql.ErrNoRows
+	}
+
+	return copies[0], nil
+}

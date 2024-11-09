@@ -1,4 +1,4 @@
-package rest
+package catalog
 
 import (
 	"log"
@@ -52,7 +52,7 @@ func (h *CatalogRouteHandler) FindBookById(c echo.Context) error {
 
 	log.Println("Book getting from Rest api ", book)
 	if err != nil {
-		slugerr := custom_err.NewSlugError("Book not found"+err.Error(), "book-not-found")
+		slugerr := custom_err.NewNotFoundError("Book not found"+err.Error(), "book-not-found")
 		custom_err.RespondWithSlugError(slugerr, &c)
 		return err
 	}
@@ -63,7 +63,7 @@ func (h *CatalogRouteHandler) FindBookByAuthorName(c echo.Context) error {
 	name := c.Param("name")
 	books, err := h.app.Queries.FindBookByAuthorName.Handle(c.Request().Context(), name)
 	if err != nil {
-		slugerr := custom_err.NewSlugError("Books with this author name not found", "books-not-found")
+		slugerr := custom_err.NewNotFoundError("Books with this author name not found", "books-not-found")
 		custom_err.RespondWithSlugError(slugerr, &c)
 		return err
 	}
@@ -74,7 +74,7 @@ func (h *CatalogRouteHandler) FindBookByTitle(c echo.Context) error {
 	title := c.Param("title")
 	books, err := h.app.Queries.FindBookByTitle.Handle(c.Request().Context(), title)
 	if err != nil {
-		slugerr := custom_err.NewSlugError("Books with this title not found", "books-not-found")
+		slugerr := custom_err.NewNotFoundError("Books with this title not found", "books-not-found")
 		custom_err.RespondWithSlugError(slugerr, &c)
 		return err
 	}

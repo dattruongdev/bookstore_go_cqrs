@@ -1,11 +1,11 @@
 package route
 
 import (
-	"github.com/dattruongdev/bookstore_cqrs/rest"
+	"github.com/dattruongdev/bookstore_cqrs/rest/catalog"
 	"github.com/labstack/echo/v4"
 )
 
-func NewCatalogRoute(group *echo.Group, handler *rest.CatalogRouteHandler) {
+func NewCatalogRoute(group *echo.Group, handler *catalog.CatalogRouteHandler) {
 	bookRoute := group.Group("/books")
 
 	bookRoute.GET("/:isbn", handler.FindBookById)

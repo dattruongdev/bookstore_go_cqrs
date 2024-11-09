@@ -1,9 +1,16 @@
 package app
 
 import (
-	"github.com/dattruongdev/bookstore_cqrs/contexts/catalog/actions/commands"
-	"github.com/dattruongdev/bookstore_cqrs/contexts/catalog/actions/queries"
-	"github.com/dattruongdev/bookstore_cqrs/contexts/catalog/adapters"
+	auth_commands "github.com/dattruongdev/bookstore_cqrs/contexts/auth/actions/commands"
+	auth_queries "github.com/dattruongdev/bookstore_cqrs/contexts/auth/actions/queries"
+	auth_adapters "github.com/dattruongdev/bookstore_cqrs/contexts/auth/adapters"
+	catalog_commands "github.com/dattruongdev/bookstore_cqrs/contexts/catalog/actions/commands"
+	catalog_queries "github.com/dattruongdev/bookstore_cqrs/contexts/catalog/actions/queries"
+	catalog_adapters "github.com/dattruongdev/bookstore_cqrs/contexts/catalog/adapters"
+	lending_commands "github.com/dattruongdev/bookstore_cqrs/contexts/lending/actions/commands"
+	lending_queries "github.com/dattruongdev/bookstore_cqrs/contexts/lending/actions/queries"
+
+	lending_adapters "github.com/dattruongdev/bookstore_cqrs/contexts/lending/adapters"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -13,15 +20,32 @@ type Application struct {
 }
 
 func NewApplication(db *sqlx.DB) Application {
-	bookRepository := adapters.NewPostgresBookRepository(db)
+	bookRepository := catalog_adapters.NewPostgresBookRepository(db)
+	borrowRepository := lending_adapters.NewPostgresBorrowRepository(db)
+	copyRepository := lending_adapters.NewPostgresCopyRepository(db)
+	userRepository := auth_adapters.NewPostgresUserRepository(db)
 
 	commands := Commands{
-		AddBookToCatalog: commands.NewAddBookToCatalogHandler(bookRepository),
+		Login:            auth_commands.NewLoginHandler(userRepository),
+		AddBookToCatalog: catalog_commands.NewAddBookToCatalogHandler(bookRepository),
+		LendBook:         lending_commands.NewLendBookHandler(copyRepository, borrowRepository),
+		CreateBorrow:     lending_commands.NewCreateBorrowHandler(borrowRepository),
+		UpdateBorrow:     lending_commands.NewUpdateBorrowHandler(borrowRepository),
+		CreateCopy:       lending_commands.NewCreateCopyHandler(copyRepository),
+		UpdateCopy:       lending_commands.NewUpdateCopyHandler(copyRepository),
 	}
 	queries := Queries{
-		FindBookById:         queries.NewFindBookByIdHandler(bookRepository),
-		FindBookByAuthorName: queries.NewFindBookByAuthorNameHandler(bookRepository),
-		FindBookByTitle:      queries.NewFindBookByTitleHandler(bookRepository),
+		FindByEmail:          auth_queries.NewFindByEmailHandler(userRepository),
+		FindById:             auth_queries.NewFindByIdHandler(userRepository),
+		FindByUsername:       auth_queries.NewFindByUsernameHandler(userRepository),
+		FindBookById:         catalog_queries.NewFindBookByIdHandler(bookRepository),
+		FindBookByAuthorName: catalog_queries.NewFindBookByAuthorNameHandler(bookRepository),
+		FindBookByTitle:      catalog_queries.NewFindBookByTitleHandler(bookRepository),
+		FindCopyByBarcode:    lending_queries.NewFindCopyByBarcodeHandler(copyRepository),
+		FindCopiesByIsbn:     lending_queries.NewFindCopyByIsbnHandler(copyRepository),
+		FindAvailableCopies:  lending_queries.NewFindAvailableCopiesHandler(copyRepository),
+		FindBorrowByBarcode:  lending_queries.NewFindBorrowByBarcodeHandler(borrowRepository),
+		FindBorrowByUserId:   lending_queries.NewFindBorrowByUserIdHandler(borrowRepository),
 	}
 
 	return Application{
@@ -31,11 +55,26 @@ func NewApplication(db *sqlx.DB) Application {
 }
 
 type Commands struct {
-	AddBookToCatalog commands.AddBookToCatalogHandler
+	Register         auth_commands.RegisterHandler
+	Login            auth_commands.LoginHandler
+	AddBookToCatalog catalog_commands.AddBookToCatalogHandler
+	LendBook         lending_commands.LendBookHandler
+	CreateBorrow     lending_commands.CreateBorrowHandler
+	CreateCopy       lending_commands.CreateCopyHandler
+	UpdateBorrow     lending_commands.UpdateBorrowHandler
+	UpdateCopy       lending_commands.UpdateCopyHandler
 }
 
 type Queries struct {
-	FindBookById         queries.FindBookByIdHandler
-	FindBookByAuthorName queries.FindBookByAuthorNameHandler
-	FindBookByTitle      queries.FindBookByTitleHandler
+	FindByEmail          auth_queries.FindByEmailHandler
+	FindById             auth_queries.FindByIdHandler
+	FindByUsername       auth_queries.FindByUsernameHandler
+	FindBookById         catalog_queries.FindBookByIdHandler
+	FindBookByAuthorName catalog_queries.FindBookByAuthorNameHandler
+	FindBookByTitle      catalog_queries.FindBookByTitleHandler
+	FindCopyByBarcode    lending_queries.FindCopyByBarcodeHandler
+	FindCopiesByIsbn     lending_queries.FindCopyByIsbnHandler
+	FindAvailableCopies  lending_queries.FindAvailableCopiesHandler
+	FindBorrowByBarcode  lending_queries.FindBorrowByBarcodeHandler
+	FindBorrowByUserId   lending_queries.FindBorrowByUserIdHandler
 }

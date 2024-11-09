@@ -1,6 +1,7 @@
 package adapters
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/dattruongdev/bookstore_cqrs/contexts/auth/domain"
@@ -12,13 +13,13 @@ type PostgresUserRepository struct {
 	db *sqlx.DB
 }
 
-func NewPostgresUserRepository(db *sqlx.DB) *PostgresUserRepository {
+func NewPostgresUserRepository(db *sqlx.DB) domain.UserRepository {
 	return &PostgresUserRepository{
 		db,
 	}
 }
 
-func (pr *PostgresUserRepository) FindById(userId uuid.UUID) (domain.User, error) {
+func (pr *PostgresUserRepository) FindById(c context.Context, userId uuid.UUID) (domain.User, error) {
 	query := `SELECT * FROM users WHERE id=$1`
 
 	rows, err := pr.db.Query(query, userId)
@@ -36,7 +37,7 @@ func (pr *PostgresUserRepository) FindById(userId uuid.UUID) (domain.User, error
 	return user, nil
 }
 
-func (pr *PostgresUserRepository) FindByEmail(email string) (domain.User, error) {
+func (pr *PostgresUserRepository) FindByEmail(c context.Context, email string) (domain.User, error) {
 	query := `SELECT * FROM users WHERE email=$1`
 
 	rows, err := pr.db.Query(query, email)
@@ -53,7 +54,7 @@ func (pr *PostgresUserRepository) FindByEmail(email string) (domain.User, error)
 
 	return user, nil
 }
-func (pr *PostgresUserRepository) FindByUsername(username string) (domain.User, error) {
+func (pr *PostgresUserRepository) FindByUsername(c context.Context, username string) (domain.User, error) {
 	query := `SELECT * FROM users WHERE username=$1`
 
 	rows, err := pr.db.Query(query, username)
@@ -71,7 +72,7 @@ func (pr *PostgresUserRepository) FindByUsername(username string) (domain.User, 
 	return user, nil
 }
 
-func (pr *PostgresUserRepository) CreateUser(user domain.User) error {
+func (pr *PostgresUserRepository) CreateUser(c context.Context, user domain.User) error {
 	query := `INSERT INTO users (username, email, password, avatar, role) VALUES ($1, $2, $3, $4, $5)`
 
 	_, err := pr.db.Exec(query, user.Username, user.Email, user.Password, user.Avatar, user.Role)

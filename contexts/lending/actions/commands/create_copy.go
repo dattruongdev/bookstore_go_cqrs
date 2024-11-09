@@ -5,6 +5,7 @@ import (
 
 	bookdomain "github.com/dattruongdev/bookstore_cqrs/contexts/catalog/domain"
 	lenddomain "github.com/dattruongdev/bookstore_cqrs/contexts/lending/domain"
+	"github.com/dattruongdev/bookstore_cqrs/errors"
 )
 
 type CreateCopy struct {
@@ -15,8 +16,8 @@ type CreateCopyHandler struct {
 	repo lenddomain.CopyRepository
 }
 
-func NewCreateCopyHandler(repo lenddomain.CopyRepository) *CreateCopyHandler {
-	return &CreateCopyHandler{repo}
+func NewCreateCopyHandler(repo lenddomain.CopyRepository) CreateCopyHandler {
+	return CreateCopyHandler{repo}
 }
 
 func (h *CreateCopyHandler) Handle(c context.Context, cmd CreateCopy) error {
@@ -24,5 +25,11 @@ func (h *CreateCopyHandler) Handle(c context.Context, cmd CreateCopy) error {
 		BookIsbn: cmd.BookIsbn,
 	}
 
-	return h.repo.CreateCopy(c, copy)
+	err := h.repo.CreateCopy(c, copy)
+
+	if err != nil {
+		return errors.NewSlugError(err.Error(), "create-copy", 500)
+	}
+
+	return nil
 }

@@ -23,8 +23,12 @@ func Unauthorized(slug, err string, c *echo.Context) {
 	httpResponseWithError(slug, err, c, http.StatusUnauthorized)
 }
 
-func RespondWithSlugError(slugError SlugError, c *echo.Context) {
-	httpResponseWithError(slugError.Slug(), slugError.Error(), c, http.StatusInternalServerError)
+func NotFound(slug, err string, c *echo.Context) {
+	httpResponseWithError(slug, err, c, http.StatusNotFound)
+}
+
+func RespondWithSlugError(slugError *SlugError, c *echo.Context) {
+	httpResponseWithError(slugError.Slug(), slugError.Error(), c, slugError.StatusCode())
 }
 
 func httpResponseWithError(slug, err string, c *echo.Context, statusCode int) {
